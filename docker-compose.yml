@@ -22,6 +22,6 @@ services:
       - POSTGRES_DB=videostore
       - POSTGRES_PASSWORD=password
     ports:
-      - 4321:4321
+      - 5432:5432
     networks:
       - video-storage-net
