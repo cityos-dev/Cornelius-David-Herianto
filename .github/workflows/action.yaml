@@ -26,7 +26,7 @@ jobs:
       - name: Run Docker Compose
         run: docker-compose up -d
       - name: Build docker tester
-        run: docker ps
+        run:  docker inspect cornelius-david-herianto_db_1 -f "{{json .NetworkSettings.Networks }}"
       - name: Run config check
         run: newman run test/tester.json
       - name: Stop containers
