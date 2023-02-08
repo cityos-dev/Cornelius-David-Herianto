@@ -22,7 +22,6 @@ services:
       - POSTGRES_DB=videostore
       - POSTGRES_PASSWORD=password
     ports:
-      - "4321:4321"
+      - 4321:4321
     networks:
       - video-storage-net
-    command: -p 4321
