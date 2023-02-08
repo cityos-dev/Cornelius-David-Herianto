@@ -6,7 +6,7 @@ import (
 )
 
 func NewPostgresSQLConnection() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", "user=postgres password=password dbname=videostore host=host.docker.internal sslmode=disable")
+	db, err := sqlx.Connect("postgres", "postgres://postgres:password@db:5432/videostore?sslmode=disable")
 	if err != nil {
 		return nil, err
 	}
