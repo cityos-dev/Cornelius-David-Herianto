@@ -1,1 +1,28 @@
 version: "3.8"
+
+networks:
+  video-storage-net:
+    name: video-storage-net
+
+services:
+  application:
+    container_name: video-storage-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - video-storage-net
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=videostore
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "4321:4321"
+    networks:
+      - video-storage-net
+    command: -p 4321
