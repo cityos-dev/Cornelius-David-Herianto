@@ -36,5 +36,4 @@ func main() {
 	g.GET("/health", healthHandler.GetHealth)
 
 	e.Logger.Fatal(e.Start(":8080"))
-
 }
