@@ -21,7 +21,6 @@ func NewPostgresStore(dbConn *sqlx.DB) dbstore.DBStore {
 
 type fileDetail struct {
 	ID        string    `db:"id,omitempty"`
-	Name      string    `db:"name,omitempty"`
 	Size      int64     `db:"size,omitempty"`
 	Path      string    `db:"path,omitempty"`
 	CreatedAt time.Time `db:"created_at"`
@@ -53,12 +52,38 @@ func (ps *postgresStore) GetFileByID(ctx context.Context, id string) (dbstore.Fi
 }
 
 func (ps *postgresStore) GetAllFiles(ctx context.Context) ([]dbstore.FileDetail, error) {
-	//TODO implement me
-	panic("implement me")
+	query := `
+		SELECT
+			id,
+			size,
+			path,
+			created_at
+		FROM
+			files`
+
+	var files []fileDetail
+	err := ps.dbConn.SelectContext(ctx, &files, query)
+	if err != nil {
+		return []dbstore.FileDetail{}, err
+	}
+	var result []dbstore.FileDetail
+	for _, file := range files {
+		result = append(result, reverseMapFileDetail(file))
+	}
+	return result, nil
 }
 
 func mapFileDetail(file dbstore.FileDetail) fileDetail {
 	return fileDetail{
+		ID:        file.ID,
+		Size:      file.Size,
+		Path:      file.Path,
+		CreatedAt: file.CreatedAt,
+	}
+}
+
+func reverseMapFileDetail(file fileDetail) dbstore.FileDetail {
+	return dbstore.FileDetail{
 		ID:        file.ID,
 		Size:      file.Size,
 		Path:      file.Path,

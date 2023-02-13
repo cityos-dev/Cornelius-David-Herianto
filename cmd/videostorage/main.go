@@ -51,8 +51,7 @@ func main() {
 
 	g.POST("/files", filesHandler.UploadFile)
 	g.GET("/files/:fileID", filesHandler.GetFileByID)
-
-	//g.Static("/files", "storage/videos")
+	g.GET("/files", filesHandler.GetAllFiles)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

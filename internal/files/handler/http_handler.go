@@ -51,3 +51,11 @@ func (h filesHTTPHandler) GetFileByID(ctx echo.Context) error {
 	ctx.Response().Header().Set("Content-Disposition", fmt.Sprintf("form-data; name='data'; filename=%s", fileID))
 	return ctx.File("storage/videos/" + fileID)
 }
+
+func (h filesHTTPHandler) GetAllFiles(ctx echo.Context) error {
+	files, err := h.service.GetAllFiles(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get all files from DB", err)
+	}
+	return ctx.JSON(http.StatusOK, files)
+}

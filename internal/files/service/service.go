@@ -30,8 +30,16 @@ var allowedContentType = []string{
 	"video/mpeg",
 }
 
+type FileInfo struct {
+	FileID    string    `json:"fileid"`
+	Name      string    `json:"name"`
+	Size      int64     `json:"size"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Service interface {
 	UploadFile(ctx context.Context, file multipart.File, host, filename string, size int64) (string, error)
+	GetAllFiles(ctx context.Context) ([]FileInfo, error)
 }
 
 type service struct {
@@ -93,4 +101,25 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 	}
 
 	return fileFullPath, nil
+}
+
+func (s service) GetAllFiles(ctx context.Context) ([]FileInfo, error) {
+	files, err := s.dbStore.GetAllFiles(ctx)
+	if err != nil {
+		return []FileInfo{}, fmt.Errorf("failed to get all files from DB, err: %v", err)
+	}
+	var fileInfos []FileInfo
+	for _, file := range files {
+		fileInfos = append(fileInfos, mapFileDetailsToFileInfo(file))
+	}
+	return fileInfos, nil
+}
+
+func mapFileDetailsToFileInfo(fileDetail filesDBStore.FileDetail) FileInfo {
+	return FileInfo{
+		FileID:    fileDetail.ID,
+		Name:      fileDetail.ID,
+		Size:      fileDetail.Size,
+		CreatedAt: fileDetail.CreatedAt,
+	}
 }
