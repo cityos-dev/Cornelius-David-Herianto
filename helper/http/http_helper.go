@@ -1,11 +1,13 @@
 package http
 
-type HTTPError struct {
-	Message string `json:"message"`
+type Error struct {
+	Message    string `json:"message"`
+	DevMessage string `json:"dev_message"`
 }
 
-func NewHTTPErrorMessage(err error) HTTPError {
-	return HTTPError{
-		Message: err.Error(),
+func NewErrorMessage(errMessage string, err error) Error {
+	return Error{
+		Message:    errMessage,
+		DevMessage: err.Error(),
 	}
 }

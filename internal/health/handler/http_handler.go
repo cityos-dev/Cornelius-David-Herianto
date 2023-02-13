@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo"
 
-	http_helper "github.com/cityos-dev/Cornelius-David-Herianto/helper/http"
+	httpHelper "github.com/cityos-dev/Cornelius-David-Herianto/helper/http"
 	"github.com/cityos-dev/Cornelius-David-Herianto/internal/health/service"
 )
 
@@ -21,7 +21,7 @@ func New(healthSvc service.Service) healthHTTPHandler {
 
 func (h *healthHTTPHandler) GetHealth(ctx echo.Context) error {
 	if err := h.healthSvc.GetServiceHealth(); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, http_helper.NewHTTPErrorMessage(err))
+		return echo.NewHTTPError(http.StatusInternalServerError, httpHelper.NewErrorMessage("failed to get service health", err))
 	}
 
 	return ctx.String(http.StatusOK, "OK")
