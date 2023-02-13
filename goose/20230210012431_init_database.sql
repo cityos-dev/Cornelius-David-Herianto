@@ -1,8 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS files(
-    id          VARCHAR(36),
-    name        VARCHAR(50)     NOT NULL,
+    id          VARCHAR,
     size        INTEGER,
     path        VARCHAR,
     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
