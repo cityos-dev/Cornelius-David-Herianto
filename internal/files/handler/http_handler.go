@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -55,7 +57,18 @@ func (h filesHTTPHandler) GetFileByID(ctx echo.Context) error {
 func (h filesHTTPHandler) GetAllFiles(ctx echo.Context) error {
 	files, err := h.service.GetAllFiles(ctx.Request().Context())
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get all files from DB", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, httpHelper.NewErrorMessage("failed to get all files from DB", err))
 	}
 	return ctx.JSON(http.StatusOK, files)
+}
+
+func (h filesHTTPHandler) DeleteFileByID(ctx echo.Context) error {
+	err := h.service.DeleteFileByID(ctx.Request().Context(), ctx.Param("fileID"))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, httpHelper.NewErrorMessage("deleted file is not exists", err))
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, httpHelper.NewErrorMessage(fmt.Sprintf("failed to delete file with id: %s", ctx.Param("fileID")), err))
+	}
+	return ctx.String(http.StatusNoContent, "OK")
 }

@@ -52,6 +52,7 @@ func main() {
 	g.POST("/files", filesHandler.UploadFile)
 	g.GET("/files/:fileID", filesHandler.GetFileByID)
 	g.GET("/files", filesHandler.GetAllFiles)
+	g.DELETE("/files/:fileID", filesHandler.DeleteFileByID)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

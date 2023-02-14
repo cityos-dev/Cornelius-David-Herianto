@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -26,8 +26,7 @@ var (
 )
 
 var allowedContentType = []string{
-	"video/mp4",
-	"video/mpeg",
+	"mp4", "mpg", "mpeg",
 }
 
 type FileInfo struct {
@@ -40,6 +39,7 @@ type FileInfo struct {
 type Service interface {
 	UploadFile(ctx context.Context, file multipart.File, host, filename string, size int64) (string, error)
 	GetAllFiles(ctx context.Context) ([]FileInfo, error)
+	DeleteFileByID(ctx context.Context, id string) error
 }
 
 type service struct {
@@ -69,9 +69,9 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 
 	fileBytes, _ := io.ReadAll(file)
 
-	// get content type from header
-	contentType := http.DetectContentType(fileBytes[:512])
-
+	// validate content type
+	filenameSplit := strings.Split(filename, ".")
+	contentType := filenameSplit[len(filenameSplit)-1]
 	if !slices.Contains(allowedContentType, contentType) {
 		return "", ErrorUnsupportedFileTypes
 	}
@@ -108,7 +108,7 @@ func (s service) GetAllFiles(ctx context.Context) ([]FileInfo, error) {
 	if err != nil {
 		return []FileInfo{}, fmt.Errorf("failed to get all files from DB, err: %v", err)
 	}
-	var fileInfos []FileInfo
+	fileInfos := make([]FileInfo, 0)
 	for _, file := range files {
 		fileInfos = append(fileInfos, mapFileDetailsToFileInfo(file))
 	}
@@ -122,4 +122,18 @@ func mapFileDetailsToFileInfo(fileDetail filesDBStore.FileDetail) FileInfo {
 		Size:      fileDetail.Size,
 		CreatedAt: fileDetail.CreatedAt,
 	}
+}
+
+func (s service) DeleteFileByID(ctx context.Context, id string) error {
+	fileDetail, err := s.dbStore.DeleteFileByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete entry from DB, err: %w", err)
+	}
+
+	err = os.Remove(localStoragePath + fileDetail.ID)
+	if err != nil {
+		_ = s.dbStore.InsertNewFile(ctx, fileDetail)
+		return fmt.Errorf("failed to delete file from local storage, err: %w", err)
+	}
+	return nil
 }
