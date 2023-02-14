@@ -65,7 +65,10 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 	if err != nil {
 		return "", fmt.Errorf("failed to create file: %s, err: %v", targetFilename, err)
 	}
-	defer dst.Close()
+
+	defer func() {
+		_ = dst.Close()
+	}()
 
 	fileBytes, _ := io.ReadAll(file)
 

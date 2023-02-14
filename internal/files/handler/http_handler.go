@@ -31,7 +31,9 @@ func (h filesHTTPHandler) UploadFile(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, httpHelper.NewErrorMessage("failed to process uploaded file", err))
 	}
-	defer multipartFile.Close()
+	defer func() {
+		_ = multipartFile.Close()
+	}()
 
 	location, err := h.service.UploadFile(ctx.Request().Context(), multipartFile, ctx.Request().Host, multipartFileHeader.Filename, multipartFileHeader.Size)
 	if err != nil {
