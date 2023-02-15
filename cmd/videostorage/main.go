@@ -37,21 +37,22 @@ func main() {
 	uuidUtils := uuid.NewUtils()
 
 	// health service
-	healthSvc := healthSvc.New(pgConn)
-	healthHandler := healthHandler.New(healthSvc)
+	healthService := healthSvc.New(pgConn)
+	healthHTTPHandler := healthHandler.New(healthService)
 
 	// files service
 	filesPostgresStore := filesPGStore.NewPostgresStore(pgConn)
-	filesSvc := filesSvc.New(filesPostgresStore, uuidUtils)
-	filesHandler := filesHandler.New(filesSvc)
+	filesService := filesSvc.New(filesPostgresStore, uuidUtils)
+	filesHTTPHandler := filesHandler.New(filesService)
 
 	// routes definition
 	g := e.Group("/v1")
-	g.GET("/health", healthHandler.GetHealth)
+	g.GET("/health", healthHTTPHandler.GetHealth)
 
-	g.POST("/files", filesHandler.UploadFile)
-	g.GET("/files/:fileID", filesHandler.GetFileByID)
-	g.GET("/files", filesHandler.GetAllFiles)
+	g.POST("/files", filesHTTPHandler.UploadFile)
+	g.GET("/files/:fileID", filesHTTPHandler.GetFileByID)
+	g.GET("/files", filesHTTPHandler.GetAllFiles)
+	g.DELETE("/files/:fileID", filesHTTPHandler.DeleteFileByID)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

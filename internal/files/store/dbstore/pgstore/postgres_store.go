@@ -2,6 +2,8 @@ package pgstore
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -31,12 +33,18 @@ func (ps *postgresStore) InsertNewFile(ctx context.Context, file dbstore.FileDet
 		INSERT INTO files (
 			id,
 		   	size,
-		   	path
+		   	path%s
 		) VALUES (
 			:id,
 			:size,
-			:path
+			:path%s
 		)`
+
+	if !file.CreatedAt.IsZero() {
+		query = fmt.Sprintf(query, ", created_at", ", :created_at")
+	} else {
+		query = fmt.Sprintf(query, "", "")
+	}
 
 	internalFile := mapFileDetail(file)
 	_, err := ps.dbConn.NamedExecContext(ctx, query, &internalFile)
@@ -46,9 +54,25 @@ func (ps *postgresStore) InsertNewFile(ctx context.Context, file dbstore.FileDet
 	return nil
 }
 
-func (ps *postgresStore) GetFileByID(ctx context.Context, id string) (dbstore.FileDetail, error) {
-	//TODO implement me
-	panic("implement me")
+func (ps *postgresStore) DeleteFileByID(ctx context.Context, id string) (dbstore.FileDetail, error) {
+	query := `
+		DELETE FROM 
+		    files
+		WHERE
+			id = $1
+		RETURNING *`
+
+	var files []fileDetail
+	err := ps.dbConn.SelectContext(ctx, &files, query, id)
+	if err != nil {
+		return dbstore.FileDetail{}, err
+	}
+
+	if len(files) == 0 {
+		return dbstore.FileDetail{}, sql.ErrNoRows
+	}
+
+	return reverseMapFileDetail(files[0]), nil
 }
 
 func (ps *postgresStore) GetAllFiles(ctx context.Context) ([]dbstore.FileDetail, error) {

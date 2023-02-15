@@ -14,6 +14,6 @@ type FileDetail struct {
 
 type DBStore interface {
 	InsertNewFile(ctx context.Context, file FileDetail) error
-	GetFileByID(ctx context.Context, id string) (FileDetail, error)
+	DeleteFileByID(ctx context.Context, id string) (FileDetail, error)
 	GetAllFiles(ctx context.Context) ([]FileDetail, error)
 }
