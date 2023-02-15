@@ -26,7 +26,7 @@ var (
 )
 
 var allowedExtensions = []string{
-	"mp4", "mpg", "mpeg",
+	".mp4", ".mpg", ".mpeg",
 }
 
 type FileInfo struct {
@@ -73,6 +73,7 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 	fileBytes, _ := io.ReadAll(file)
 
 	// validate content type
+	fmt.Println(filepath.Ext(filename))
 	if !slices.Contains(allowedExtensions, filepath.Ext(filename)) {
 		return "", ErrorUnsupportedFileTypes
 	}
