@@ -6,7 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/lib/pq"
@@ -25,8 +25,8 @@ var (
 	ErrorDuplicateKey         = fmt.Errorf("duplicate key value")
 )
 
-var allowedContentType = []string{
-	"mp4", "mpg", "mpeg",
+var allowedExtensions = []string{
+	".mp4", ".mpg", ".mpeg",
 }
 
 type FileInfo struct {
@@ -73,9 +73,7 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 	fileBytes, _ := io.ReadAll(file)
 
 	// validate content type
-	filenameSplit := strings.Split(filename, ".")
-	contentType := filenameSplit[len(filenameSplit)-1]
-	if !slices.Contains(allowedContentType, contentType) {
+	if !slices.Contains(allowedExtensions, filepath.Ext(filename)) {
 		return "", ErrorUnsupportedFileTypes
 	}
 

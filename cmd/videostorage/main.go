@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"mime"
 	"os"
 
 	"github.com/labstack/echo"
@@ -31,6 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to do DB migration, err: %v", err)
 	}
+
+	// initialize mime type mapping
+	mime.AddExtensionType(".mp4", "video/mp4")
+	mime.AddExtensionType(".mpg", "video/mpeg")
+	mime.AddExtensionType(".mpeg", "video/mpeg")
 
 	// -- services initialization --
 	// uuid utils

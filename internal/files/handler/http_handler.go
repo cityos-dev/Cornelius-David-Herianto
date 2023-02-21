@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"mime"
 	"net/http"
+	"path/filepath"
 
 	"github.com/labstack/echo"
 
@@ -53,6 +55,7 @@ func (h filesHTTPHandler) GetFileByID(ctx echo.Context) error {
 	fileID := ctx.Param("fileID")
 
 	ctx.Response().Header().Set("Content-Disposition", fmt.Sprintf("form-data; name='data'; filename=%s", fileID))
+	ctx.Response().Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(fileID)))
 	return ctx.File("storage/videos/" + fileID)
 }
 
