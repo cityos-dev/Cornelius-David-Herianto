@@ -35,8 +35,8 @@ func main() {
 
 	// initialize mime type mapping
 	mime.AddExtensionType(".mp4", "video/mp4")
-	mime.AddExtensionType(".mpg", "video/mpg")
-	mime.AddExtensionType(".mpeg", "video/mpg")
+	mime.AddExtensionType(".mpg", "video/mpeg")
+	mime.AddExtensionType(".mpeg", "video/mpeg")
 
 	// -- services initialization --
 	// uuid utils
