@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/lib/pq"
 	"mime/multipart"
 	"os"
 	"reflect"
@@ -12,15 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cityos-dev/Cornelius-David-Herianto/helper/uuid"
+	"github.com/golang/mock/gomock"
+	"github.com/lib/pq"
+
 	"github.com/cityos-dev/Cornelius-David-Herianto/internal/files/store/dbstore"
 	dbStoreMocks "github.com/cityos-dev/Cornelius-David-Herianto/internal/files/store/dbstore/mocks"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		dbStore   dbstore.DBStore
-		uuidUtils uuid.Utils
+		dbStore dbstore.DBStore
 	}
 	tests := []struct {
 		name string
