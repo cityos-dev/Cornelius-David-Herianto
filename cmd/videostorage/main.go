@@ -4,11 +4,12 @@ import (
 	"log"
 	"mime"
 	"os"
+	"time"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/cityos-dev/Cornelius-David-Herianto/goose/migration_script"
-	"github.com/cityos-dev/Cornelius-David-Herianto/helper/uuid"
 	"github.com/cityos-dev/Cornelius-David-Herianto/infrastructure/postgresql"
 	filesHandler "github.com/cityos-dev/Cornelius-David-Herianto/internal/files/handler"
 	filesSvc "github.com/cityos-dev/Cornelius-David-Herianto/internal/files/service"
@@ -18,10 +19,15 @@ import (
 )
 
 func main() {
+	// initialize echo
 	e := echo.New()
 	e.HideBanner = true
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Skipper: middleware.DefaultSkipper,
+		Timeout: 30 * time.Second,
+	}))
 
-	// Database connection initialization
+	// database connection initialization
 	pgConn, err := postgresql.NewPostgresSQLConnection(os.Getenv("POSTGRES_HOST"))
 	if err != nil {
 		log.Fatalf("failed to connect to DB, err: %v", err)
@@ -39,16 +45,13 @@ func main() {
 	mime.AddExtensionType(".mpeg", "video/mpeg")
 
 	// -- services initialization --
-	// uuid utils
-	uuidUtils := uuid.NewUtils()
-
 	// health service
 	healthService := healthSvc.New(pgConn)
 	healthHTTPHandler := healthHandler.New(healthService)
 
 	// files service
 	filesPostgresStore := filesPGStore.NewPostgresStore(pgConn)
-	filesService := filesSvc.New(filesPostgresStore, uuidUtils)
+	filesService := filesSvc.New(filesPostgresStore)
 	filesHTTPHandler := filesHandler.New(filesService)
 
 	// routes definition

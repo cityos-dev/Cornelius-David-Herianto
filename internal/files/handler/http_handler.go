@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 
 	httpHelper "github.com/cityos-dev/Cornelius-David-Herianto/helper/http"
 	filesSvc "github.com/cityos-dev/Cornelius-David-Herianto/internal/files/service"
@@ -54,8 +54,8 @@ func (h filesHTTPHandler) UploadFile(ctx echo.Context) error {
 func (h filesHTTPHandler) GetFileByID(ctx echo.Context) error {
 	fileID := ctx.Param("fileID")
 
-	ctx.Response().Header().Set("Content-Disposition", fmt.Sprintf("form-data; name='data'; filename=%s", fileID))
-	ctx.Response().Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(fileID)))
+	ctx.Response().Header().Set(echo.HeaderContentDisposition, fmt.Sprintf("form-data; name='data'; filename=%s", fileID))
+	ctx.Response().Header().Set(echo.HeaderContentType, mime.TypeByExtension(filepath.Ext(fileID)))
 	return ctx.File("storage/videos/" + fileID)
 }
 

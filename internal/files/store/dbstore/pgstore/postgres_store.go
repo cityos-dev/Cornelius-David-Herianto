@@ -15,12 +15,14 @@ type postgresStore struct {
 	dbConn *sqlx.DB
 }
 
+// NewPostgresStore returns new postgresStore instance
 func NewPostgresStore(dbConn *sqlx.DB) dbstore.DBStore {
 	return &postgresStore{
 		dbConn: dbConn,
 	}
 }
 
+// fileDetail is the internal db structure for dbstore.FileDetail
 type fileDetail struct {
 	ID        string    `db:"id,omitempty"`
 	Size      int64     `db:"size,omitempty"`
@@ -28,6 +30,7 @@ type fileDetail struct {
 	CreatedAt time.Time `db:"created_at"`
 }
 
+// InsertNewFile inserts new record to DB with specified detail
 func (ps *postgresStore) InsertNewFile(ctx context.Context, file dbstore.FileDetail) error {
 	query := `
 		INSERT INTO files (
@@ -54,6 +57,7 @@ func (ps *postgresStore) InsertNewFile(ctx context.Context, file dbstore.FileDet
 	return nil
 }
 
+// DeleteFileByID remove file record from DB with specified id
 func (ps *postgresStore) DeleteFileByID(ctx context.Context, id string) (dbstore.FileDetail, error) {
 	query := `
 		DELETE FROM 
@@ -75,6 +79,7 @@ func (ps *postgresStore) DeleteFileByID(ctx context.Context, id string) (dbstore
 	return reverseMapFileDetail(files[0]), nil
 }
 
+// GetAllFiles returns a list of files in the DB
 func (ps *postgresStore) GetAllFiles(ctx context.Context) ([]dbstore.FileDetail, error) {
 	query := `
 		SELECT

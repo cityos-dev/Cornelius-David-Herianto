@@ -12,7 +12,6 @@ import (
 	"github.com/lib/pq"
 	"golang.org/x/exp/slices"
 
-	"github.com/cityos-dev/Cornelius-David-Herianto/helper/uuid"
 	filesDBStore "github.com/cityos-dev/Cornelius-David-Herianto/internal/files/store/dbstore"
 )
 
@@ -20,6 +19,7 @@ const (
 	localStoragePath = "storage/videos/"
 )
 
+// Errors represent custom error that will be verified by the handler layer
 var (
 	ErrorUnsupportedFileTypes = fmt.Errorf("unsupported file types")
 	ErrorDuplicateKey         = fmt.Errorf("duplicate key value")
@@ -29,6 +29,7 @@ var allowedExtensions = []string{
 	".mp4", ".mpg", ".mpeg",
 }
 
+// FileInfo represents information of a file
 type FileInfo struct {
 	FileID    string    `json:"fileid"`
 	Name      string    `json:"name"`
@@ -36,6 +37,9 @@ type FileInfo struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Service provides mechanism to interact with files
+//
+//go:generate mockgen -destination mocks/mock_service.go github.com/cityos-dev/Cornelius-David-Herianto/internal/files/service Service
 type Service interface {
 	UploadFile(ctx context.Context, file multipart.File, host, filename string, size int64) (string, error)
 	GetAllFiles(ctx context.Context) ([]FileInfo, error)
@@ -43,17 +47,17 @@ type Service interface {
 }
 
 type service struct {
-	dbStore   filesDBStore.DBStore
-	uuidUtils uuid.Utils
+	dbStore filesDBStore.DBStore
 }
 
-func New(dbStore filesDBStore.DBStore, uuidUtils uuid.Utils) Service {
+// New returned new Service instance
+func New(dbStore filesDBStore.DBStore) Service {
 	return service{
-		dbStore:   dbStore,
-		uuidUtils: uuidUtils,
+		dbStore: dbStore,
 	}
 }
 
+// UploadFile do save file to local storage (file system) and also insert the file detail info to the DB
 func (s service) UploadFile(ctx context.Context, file multipart.File, host, filename string, size int64) (string, error) {
 	// save file to local storage
 	err := os.MkdirAll(localStoragePath, os.ModePerm)
@@ -70,7 +74,10 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 		_ = dst.Close()
 	}()
 
-	fileBytes, _ := io.ReadAll(file)
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to write read uploaded file, err: %v", err)
+	}
 
 	// validate content type
 	if !slices.Contains(allowedExtensions, filepath.Ext(filename)) {
@@ -104,6 +111,7 @@ func (s service) UploadFile(ctx context.Context, file multipart.File, host, file
 	return fileFullPath, nil
 }
 
+// GetAllFiles returned all files info listed on the DB
 func (s service) GetAllFiles(ctx context.Context) ([]FileInfo, error) {
 	files, err := s.dbStore.GetAllFiles(ctx)
 	if err != nil {
@@ -125,6 +133,7 @@ func mapFileDetailsToFileInfo(fileDetail filesDBStore.FileDetail) FileInfo {
 	}
 }
 
+// DeleteFileByID delete a file by its id
 func (s service) DeleteFileByID(ctx context.Context, id string) error {
 	fileDetail, err := s.dbStore.DeleteFileByID(ctx, id)
 	if err != nil {
